@@ -1,76 +1,71 @@
-# Adobe Hackathon PDF Extractor
+# PDF Heading Extractor
 
-This project is a Python script that extracts structured information from PDF files, such as headings, titles, and language, and saves the output as a JSON file.
+## 📖 Description
 
-***
+This project is a **Python script** that extracts headings, titles, and language from PDF files. It processes each PDF in a specified `input` directory and, for each file, it generates a **JSON file** containing the extracted information. The entire process is containerized using **Docker**, making it easy to run in a consistent and isolated environment.
 
-## How it Works
+---
 
-The script processes PDF files to identify and extract key textual elements. It uses two primary methods for this:
+## 📂 Project Structure
 
-1.  *Table of Contents (TOC):* If a PDF has a built-in Table of Contents, the script will use it to get the primary headings and the document's title.
-2.  *Font Analysis:* If no TOC is available, the script analyzes the text on each page. It identifies headings by looking for text with a font size larger than a predefined minimum (14.0) or text that is bold. It distinguishes between H1 and H2 level headings based on font size (H1 >= 16.0).
+Here is the file and directory structure for this project:
 
-The script also detects the primary language of the document by analyzing the initial text snippets.
+.
+├── input/
+│   └── (Your PDF files go here)
+├── output/
+│   └── (Generated JSON files will be saved here)
+├── main.py
+└── Dockerfile
 
-***
 
-## Features
+* **`input/`**: This directory is where you should place all the PDF files that you want to process.
+* **`output/`**: After processing, the script will save the resulting JSON files in this directory.
+* **`main.py`**: The main Python script that contains all the logic for extracting information from the PDFs.
+* **`Dockerfile`**: A text file that contains all the commands, in order, needed to build the Docker image for this project.
 
-* *Title Extraction:* Automatically extracts the document's title.
-* *Heading Extraction:* Identifies and lists all headings (H1 and H2) along with their corresponding page numbers.
-* *Language Detection:* Determines the language of the document's text.
-* *JSON Output:* Saves the extracted data in a structured and easy-to-read JSON file.
+---
 
-***
+## 🏛️ Architecture
 
-## Dependencies
+This project is designed with a straightforward and efficient architecture, which can be broken down into two main components:
 
-The solution relies on the following Python libraries:
+1.  **Python Script (`main.py`)**:
+    * **File Handling**: The script is designed to read PDF files from a designated `input` directory and write the output to a corresponding `output` directory.
+    * **PDF Processing**: It uses the **`PyMuPDF`** library to open and parse PDF files, extracting text blocks and their properties, such as font size and style.
+    * **Heading Detection**: Headings are identified based on font size and whether the text is bold. This allows the script to create a structured outline of the document.
+    * **Language Detection**: The **`langdetect`** library is used to determine the language of the text in the PDF.
+    * **JSON Output**: The extracted information, including the title, language, and a detailed outline, is saved in a well-structured JSON format.
 
-* **PyMuPDF (fitz):** For opening, reading, and extracting content from PDF files.
-* *langdetect:* To detect the language of the text.
+2.  **Docker Environment**:
+    * **Base Image**: The project uses a lightweight **`python:3.11-slim`** base image to keep the overall size of the Docker image small.
+    * **Dependencies**: The `Dockerfile` handles the installation of all necessary system libraries (like `libmupdf-dev`) and Python packages (such as `PyMuPDF` and `langdetect`).
+    * **Containerization**: By containerizing the application, we ensure that it runs in a consistent environment, regardless of the host system. This eliminates the "it works on my machine" problem.
+    * **Automation**: The `CMD` instruction in the `Dockerfile` specifies the command to run when the container starts, automating the execution of the Python script.
 
-You can install these dependencies using pip:
+---
+
+## 🐳 Docker Commands
+
+To build and run this project using Docker, follow these simple steps.
+
+### 1. Build the Docker Image
+
+First, you need to build the Docker image from the `Dockerfile`. Open your terminal or command prompt, navigate to the project's root directory (where the `Dockerfile` is located), and run the following command:
 
 ```bash
-pip install -r requirements.txt
-How to Use
-Create Directories:
+docker build -t pdf-extractor .
+docker build: The command to build a Docker image.
+```
 
-Create an input folder and place all the PDF files you want to process into this directory.
+2. Run the Docker Container
+Once the image is built, you can run it as a container. This command will also mount the input and output directories from your local machine to the container, allowing the script to access your PDF files and save the JSON output back to your machine.
 
-The script will automatically create an output folder to store the results.
+```
+docker run --rm -v "$(pwd)/input:/app/input" -v "$(pwd)/output:/app/output" pdf-extractor
+docker run: The command to run a Docker container.
+```
 
-Run the Script:
-Execute the main.py script from your terminal:
+pdf-extractor: The name of the image to run.
 
-python main.py
-
-Get the Output:
-
-For each processed PDF, a corresponding JSON file will be generated in the output directory. For example, a PDF named mydocument.pdf will produce output_mydocument.json.
-
-The terminal will show the progress and indicate whether each file was processed successfully.
-
-Output Format
-The output for each PDF is a JSON file containing the document's title, its detected language, and a detailed outline of its headings.
-
-Example output.json:
-
-{
-    "title": "Example Document Title",
-    "language": "en",
-    "outline": [
-        {
-            "level": "H1",
-            "text": "Main Section 1",
-            "page": 0
-        },
-        {
-            "level": "H2",
-            "text": "Subsection 1.1",
-            "page": 1
-        }
-    ]
-}   
+After running this command, the script will start processing the PDFs in your input folder, and you will see the JSON files appear in your output folder.
